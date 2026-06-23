@@ -68,7 +68,7 @@ async def create_user(
 ):
     hashed_password = hash_password(user_data.password)
 
-    new_user = User(username=user_data.username, password=hashed_password)
+    new_user = User(username=user_data.username, password=hashed_password, roles="user")
     session.add(new_user)
     await session.commit()
     await session.refresh(new_user)
@@ -163,6 +163,8 @@ async def create_ad(
         session=session,
         need_write=True
     )
+    if not has_access:
+        raise HTTPException(status_code=403, detail="Access denied")
     if has_access:
         new_ad = await add_item(session, models.Advert, ad_data)
         return schemas.CreateAdResponse(id=new_ad.id)
@@ -236,9 +238,8 @@ async def delete_ad(
 
     if has_access:
         await delete_item(session, models.Advert, ad_id)
-        return schemas.OkResponse()
-    else:
-        return None
+    return schemas.OkResponse()
+
 
 # Unauthorized
 @app.get("/advertisement", summary="Get Ad by fields")
