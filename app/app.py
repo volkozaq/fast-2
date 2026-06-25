@@ -89,6 +89,20 @@ async def get_user(
 
     return user
 
+#Admin only
+@app.get("/user", response_model=list[schemas.GetUserResponse], summary="Get all users")
+async def get_all_users(
+        session: SessionDep,
+        token_obj: Token = Depends(check_token) 
+):
+
+    if token_obj.user.roles.name != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    query = select(User)
+    result = await session.execute(query)
+    users = result.scalars().unique().all()
+    return users
 
 @app.patch("/user/{user_id}", response_model=schemas.UpdateUserResponse, summary="Update User")
 async def update_user(
