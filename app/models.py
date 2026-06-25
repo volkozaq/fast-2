@@ -59,7 +59,7 @@ class User(Base):
         "Advert", back_populates="author", cascade="all, delete-orphan", lazy="joined"
     )
 
-    roles: Mapped[List[Role]] = relationship(
+    roles: Mapped[Role] = relationship(
         secondary=user_role_relation,
         lazy="joined"
     )
